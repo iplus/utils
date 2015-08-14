@@ -1,5 +1,22 @@
 import datetime
 import sys
+import itertools
+
+
+def imerge(producers, chooser):
+    values = []
+    nexts = list(producers)
+    for producer in nexts:
+        values.append(next(producer))
+    while values:
+        val = chooser(values)
+        ind = values.index(val)
+        yield val
+        try:
+            values[ind] = next(nexts[ind])
+        except StopIteration:
+            nexts.remove(nexts[ind])
+            values.remove(val)
 
 
 class Line(object):
@@ -14,7 +31,7 @@ class Line(object):
         return self.text
 
 
-def read_srt_file(file_name):
+def srt_file_producer(file_name):
     with open(file_name, 'r') as f:
         while True:
             if not f.readline():
@@ -30,24 +47,10 @@ def read_srt_file(file_name):
 
 
 def combine_srt_files(*file_names):
-    srt_files = list(map(read_srt_file, file_names))
-    phrases = []
-    for srt_file in srt_files:
-        phrases.append(next(srt_file))
-    while phrases:
-        phrase = min(phrases)
-        ind = phrases.index(phrase)
-        yield phrase
-        try:
-            phrases[ind] = next(srt_files[ind])
-        except StopIteration:
-            srt_files.remove(srt_files[ind])
-            phrases.remove(phrase)
+    srt_files = map(srt_file_producer, file_names)
+    return imerge(srt_files, min)
 
-
-i = 0
+ind = itertools.count(1)
 for line in combine_srt_files(*sys.argv[1:]):
-    i += 1
-    print(i)
+    print(next(ind))
     print(line)
-
