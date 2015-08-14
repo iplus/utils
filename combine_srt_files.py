@@ -3,6 +3,7 @@ import sys
 import itertools
 import heapq
 
+
 class Line(object):
     def __init__(self, when, text):
         self.when = when
@@ -33,6 +34,7 @@ def srt_file_producer(file_name):
 def combine_srt_files(file_names):
     srt_files = map(srt_file_producer, file_names)
     return heapq.merge(*srt_files)
+
 
 ind = itertools.count(1)
 for line in combine_srt_files(sys.argv[1:]):
