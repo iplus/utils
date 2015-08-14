@@ -1,23 +1,7 @@
 import datetime
 import sys
 import itertools
-
-
-def imerge(producers, chooser):
-    values = []
-    nexts = list(producers)
-    for producer in nexts:
-        values.append(next(producer))
-    while values:
-        val = chooser(values)
-        ind = values.index(val)
-        yield val
-        try:
-            values[ind] = next(nexts[ind])
-        except StopIteration:
-            nexts.remove(nexts[ind])
-            values.remove(val)
-
+import heapq
 
 class Line(object):
     def __init__(self, when, text):
@@ -46,11 +30,11 @@ def srt_file_producer(file_name):
             yield Line(when, txt)
 
 
-def combine_srt_files(*file_names):
+def combine_srt_files(file_names):
     srt_files = map(srt_file_producer, file_names)
-    return imerge(srt_files, min)
+    return heapq.merge(*srt_files)
 
 ind = itertools.count(1)
-for line in combine_srt_files(*sys.argv[1:]):
+for line in combine_srt_files(sys.argv[1:]):
     print(next(ind))
     print(line)
